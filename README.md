@@ -1,73 +1,86 @@
-# React + TypeScript + Vite
+# 🎵 Spotify Dashboard
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Application web pour organiser et noter vos albums Spotify préférés, avec un système de profils publics et de suivi entre utilisateurs.
 
-Currently, two official plugins are available:
+## ✨ Fonctionnalités
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- **Gestion d'albums** : Ajoutez vos albums préférés via lien Spotify ou recherche autocomplete
+- **Notation** : Système de notation 5 étoiles pour chaque album
+- **Organisation** : Filtrage par genre, statistiques (top genre, nombre d'albums)
+- **Album favori** : Marquez un album comme favori et affichez-le sur votre profil
+- **Profils publics** : Consultez les profils et collections d'autres utilisateurs
+- **Système de suivi** : Liste de suivi privée pour suivre vos utilisateurs préférés
+- **Authentification Google** : Connexion sécurisée via Firebase Auth
+- **Design moderne** : Interface sombre inspirée de Spotify avec Tailwind CSS + DaisyUI
 
-## React Compiler
+## 🛠️ Stack technique
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **React 19** + **TypeScript** + **Vite 7**
+- **Firebase** (Firestore + Auth)
+- **Tailwind CSS v4** + **DaisyUI 5**
+- **Spotify Web API** (recherche d'albums)
+- **React Hot Toast** (notifications)
+- **React Icons**
 
-## Expanding the ESLint configuration
+## 🚀 Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+```bash
+# Cloner le repo
+git clone <url>
+cd spotify-dashboard
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+# Installer les dépendances
+npm install
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+# Configurer les variables d'environnement
+cp .env.example .env
+# Remplir .env avec vos clés Firebase et Spotify
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+# Lancer en dev
+npm run dev
+
+# Build pour production
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🔑 Configuration
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### Firebase
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+1. Créez un projet sur [Firebase Console](https://console.firebase.google.com)
+2. Activez **Firestore** et **Authentication** (provider Google)
+3. Copiez les clés de config dans `.env`
+
+### Spotify API
+
+1. Créez une app sur [Spotify Developer Dashboard](https://developer.spotify.com/dashboard)
+2. Copiez le **Client ID** et **Client Secret** dans `.env`
+
+### Seed des données
+
+Pour peupler Firestore avec des albums de test :
+
+```bash
+node scripts/seed.mjs VOTRE_FIREBASE_UID
 ```
+
+## 📁 Structure
+
+```
+src/
+├── components/       # Composants React
+├── hooks/           # Custom hooks (useAuth, useProfile, useAlbums)
+├── services/        # Services Firebase et Spotify
+├── types/           # Types TypeScript
+└── data/            # Données mock pour dev
+```
+
+## 🎨 Thème
+
+Thème custom DaisyUI "spotifydark" avec :
+- Couleur primaire : `#1DB954` (vert Spotify)
+- Fond : `#0a0a0a` / `#141414` / `#1e1e1e`
+
+## 📝 License
+
+MIT
