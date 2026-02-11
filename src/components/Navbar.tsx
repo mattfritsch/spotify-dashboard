@@ -18,7 +18,7 @@ export default function Navbar({ onAddClick, user, profile, onSignIn, onSignOut,
   const photoURL = profile?.photoURL || user?.photoURL || '';
 
   return (
-    <div className="navbar bg-base-200/80 backdrop-blur-lg border-b border-white/5 sticky top-0 z-50 px-4 min-h-14">
+    <div className="navbar bg-base-200/80 backdrop-blur-lg border-b border-white/5 sticky top-0 z-50 px-4 min-h-14 pt-safe">
       <div className="flex-1 gap-3 items-center">
         <FaSpotify className="text-spotify text-2xl" />
       </div>
