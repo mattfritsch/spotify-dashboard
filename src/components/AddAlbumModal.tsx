@@ -157,8 +157,8 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
 
   return (
     <dialog className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box bg-base-200 border border-white/5 p-5 max-w-md">
-        <h3 className="font-semibold text-base mb-4">Ajouter un album</h3>
+      <div className="modal-box bg-base-200 border border-white/5 p-4 sm:p-5">
+        <h3 className="font-semibold text-base mb-3 sm:mb-4">Ajouter un album</h3>
 
         {/* Smart input */}
         <div className="relative">
@@ -167,8 +167,8 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
           </div>
           <input
             type="text"
-            placeholder="Rechercher un album ou coller un lien Spotify..."
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-base-300 border border-white/5 text-sm placeholder:text-base-content/30 focus:outline-none focus:border-spotify/50 transition-colors"
+            placeholder="Rechercher un album..."
+            className="w-full pl-10 pr-4 py-2.5 sm:py-3 rounded-xl bg-base-300 border border-white/5 placeholder:text-base-content/30 focus:outline-none focus:border-spotify/50 transition-colors"
             value={input}
             onChange={(e) => handleInputChange(e.target.value)}
             autoFocus

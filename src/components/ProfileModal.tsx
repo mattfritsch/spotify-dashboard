@@ -49,8 +49,8 @@ export default function ProfileModal({ isOpen, onClose, profile, albums, onSave 
 
   return (
     <dialog className="modal modal-open modal-bottom sm:modal-middle">
-      <div className="modal-box bg-base-200 border border-white/5 p-5 max-w-sm">
-        <h3 className="font-semibold text-base mb-5">Modifier le profil</h3>
+      <div className="modal-box bg-base-200 border border-white/5 p-4 sm:p-5">
+        <h3 className="font-semibold text-base mb-4 sm:mb-5">Modifier le profil</h3>
 
         {/* Avatar preview */}
         <div className="flex justify-center mb-5">
