@@ -156,7 +156,7 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
   const linkMode = isSpotifyLink(input);
 
   return (
-    <dialog className="modal modal-open modal-top sm:modal-middle">
+    <dialog className="modal modal-open modal-middle">
       <div className="modal-box bg-base-200 border border-white/5 p-4 sm:p-5">
         <h3 className="font-semibold text-base mb-3 sm:mb-4">Ajouter un album</h3>
 
