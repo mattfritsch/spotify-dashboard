@@ -33,15 +33,15 @@ export default function AlbumCard({ album, isFavorite, onDelete, onRate, onToggl
           <span className="text-[10px] px-2 py-0.5 rounded-full bg-spotify/15 text-spotify font-medium">
             {album.genre}
           </span>
-          <div className="flex items-center gap-0.5">
+          <div className="flex items-center gap-1">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
                 key={star}
-                className="p-0.5 touch-manipulation"
+                className="p-1.5 -m-1 touch-manipulation active:scale-125 transition-transform"
                 onClick={() => onRate(album.id, album.rating === star ? null : star)}
               >
                 <FaStar
-                  className={`text-[10px] transition-colors ${
+                  className={`text-xs transition-colors ${
                     album.rating && star <= album.rating
                       ? 'text-amber-400'
                       : 'text-white/10'

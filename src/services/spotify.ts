@@ -49,12 +49,15 @@ async function getAccessToken(): Promise<string> {
   });
 
   if (!response.ok) {
+    const errorData = await response.json();
+    console.error('❌ Erreur Spotify:', errorData);
     throw new Error('Impossible de se connecter à Spotify');
   }
 
   const data = await response.json();
   accessToken = data.access_token;
   tokenExpiry = Date.now() + data.expires_in * 1000 - 60000; // 1 min buffer
+  console.log('✅ Token obtenu:', accessToken?.substring(0, 20) + '...');
   return accessToken!;
 }
 

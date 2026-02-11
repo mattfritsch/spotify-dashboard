@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
 import { FaSearch, FaUser, FaArrowLeft, FaTimes, FaUserPlus } from 'react-icons/fa';
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error
 import { getFollowing, searchUsersByName, followUser, unfollowUser } from '../services/firestore';
 import type { FollowEntry } from '../types';
 
