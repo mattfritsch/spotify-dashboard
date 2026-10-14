@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { FaSearch, FaLink } from 'react-icons/fa';
 import { extractAlbumId, fetchAlbumFromSpotify, searchAlbums } from '../services/spotify';
 import { addAlbum } from '../services/firestore';
+import GenreSelect from './GenreSelect';
 import { GENRES } from '../types';
 import type { SpotifyAlbumData, SpotifySearchResult } from '../types';
 
@@ -10,6 +11,9 @@ interface AddAlbumModalProps {
   isOpen: boolean;
   onClose: () => void;
   uid: string;
+  genres: string[];
+  initialValue?: string;
+  defaultWishlist?: boolean;
 }
 
 function matchGenre(spotifyGenres: string[]): string {
@@ -36,13 +40,14 @@ function isSpotifyLink(value: string): boolean {
   return value.includes('spotify.com/album') || value.includes('spotify:album:');
 }
 
-export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalProps) {
+export default function AddAlbumModal({ isOpen, onClose, uid, genres, initialValue, defaultWishlist }: AddAlbumModalProps) {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [searching, setSearching] = useState(false);
   const [preview, setPreview] = useState<SpotifyAlbumData | null>(null);
   const [results, setResults] = useState<SpotifySearchResult[]>([]);
   const [selectedGenre, setSelectedGenre] = useState<string>('Autre');
+  const [wishlist, setWishlist] = useState(!!defaultWishlist);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
 
   const resetState = useCallback(() => {
@@ -53,6 +58,16 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
     setLoading(false);
     setSearching(false);
   }, []);
+
+  // Prefill (Share Target) / default list when opened
+  useEffect(() => {
+    if (!isOpen) return;
+    setWishlist(!!defaultWishlist);
+    if (initialValue) {
+      setInput(initialValue);
+      void handleLinkFetch(initialValue);
+    }
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup debounce on unmount
   useEffect(() => {
@@ -133,8 +148,10 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
         coverUrl: preview.coverUrl,
         spotifyUrl: preview.spotifyUrl,
         genre: selectedGenre,
+        ...(preview.releaseYear && { releaseYear: preview.releaseYear }),
         rating: null,
         addedAt: new Date().toISOString(),
+        ...(wishlist && { wishlist: true }),
       });
       toast.success(`"${preview.name}" ajouté !`);
       resetState();
@@ -156,8 +173,8 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
   const linkMode = isSpotifyLink(input);
 
   return (
-    <dialog className="modal modal-open modal-middle">
-      <div className="modal-box bg-base-200 border border-white/5 p-4 sm:p-5">
+    <dialog className="modal modal-open modal-bottom sm:modal-middle">
+      <div className="modal-box bg-base-200 border border-white/5 p-4 sm:p-5 safe-bottom">
         <h3 className="font-semibold text-base mb-3 sm:mb-4">Ajouter un album</h3>
 
         {/* Smart input */}
@@ -214,21 +231,18 @@ export default function AddAlbumModal({ isOpen, onClose, uid }: AddAlbumModalPro
             <div className="flex-1 min-w-0">
               <p className="font-semibold text-sm truncate">{preview.name}</p>
               <p className="text-xs text-base-content/40 truncate">{preview.artist}</p>
-              <select
-                className="mt-2 w-full px-3 py-1.5 rounded-lg bg-base-300 border border-white/5 text-xs focus:outline-none focus:border-spotify/50"
-                value={selectedGenre}
-                onChange={(e) => setSelectedGenre(e.target.value)}
-              >
-                {GENRES.map((g) => (
-                  <option key={g} value={g}>{g}</option>
-                ))}
-              </select>
+              <GenreSelect className="mt-2 w-full" value={selectedGenre} genres={genres} onChange={setSelectedGenre} />
             </div>
           </div>
         )}
 
+        <label className="flex items-center gap-2 mt-4 text-sm text-base-content/60 min-h-11">
+          <input type="checkbox" className="checkbox checkbox-sm checkbox-success" checked={wishlist} onChange={(e) => setWishlist(e.target.checked)} />
+          À écouter plus tard
+        </label>
+
         {/* Actions */}
-        <div className="flex gap-2 mt-5 justify-end">
+        <div className="flex gap-2 mt-2 justify-end">
           <button
             className="px-4 py-2 rounded-lg text-sm text-base-content/50 hover:text-base-content transition-colors"
             onClick={handleClose}

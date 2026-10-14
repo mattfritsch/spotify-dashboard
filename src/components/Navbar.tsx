@@ -27,20 +27,20 @@ export default function Navbar({ onAddClick, user, profile, onSignIn, onSignOut,
         {user ? (
           <>
             <button
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/5 text-base-content/50 flex items-center justify-center active:bg-white/10 transition-colors"
+              className="hidden sm:flex w-9 h-9 rounded-full bg-white/5 text-base-content/50 flex items-center justify-center active:bg-white/10 transition-colors"
               onClick={onFollowingClick}
               title="Mes suivis"
             >
               <FaUsers className="text-xs sm:text-sm" />
             </button>
             <button
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-spotify text-black flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-spotify/20"
+              className="hidden sm:flex w-9 h-9 rounded-full bg-spotify text-black flex items-center justify-center active:scale-95 transition-transform shadow-lg shadow-spotify/20"
               onClick={onAddClick}
             >
               <FaPlus className="text-xs sm:text-sm" />
             </button>
-            <div className="dropdown dropdown-end">
-              <div tabIndex={0} role="button" className="w-8 h-8 sm:w-9 sm:h-9 rounded-full overflow-hidden ring-2 ring-white/10 active:ring-spotify/50 transition-all cursor-pointer bg-base-300 flex items-center justify-center">
+            <div className="hidden sm:block dropdown dropdown-end">
+              <div tabIndex={0} role="button" className="w-11 h-11 sm:w-9 sm:h-9 rounded-full overflow-hidden ring-2 ring-white/10 active:ring-spotify/50 transition-all cursor-pointer bg-base-300 flex items-center justify-center">
                 {photoURL ? (
                   <img src={photoURL} alt={displayName} className="w-full h-full object-cover" />
                 ) : (

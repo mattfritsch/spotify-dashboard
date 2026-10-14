@@ -1,28 +1,33 @@
 import { useEffect, useState } from 'react';
 import { FaUser, FaHeart, FaArrowLeft, FaStar, FaSpotify, FaUserPlus, FaUserMinus } from 'react-icons/fa';
 import AlbumCover from './AlbumCover';
+import FriendAlbumSheet from './FriendAlbumSheet';
+import { compatibility } from '../lib/compat';
 import { getUserProfile, getAlbumsOnce } from '../services/firestore';
 import type { Album, UserProfile } from '../types';
 
 interface PublicProfileViewProps {
   targetUid: string;
+  myAlbums: Album[];
+  me: { uid: string; name: string };
   isFollowing: boolean;
   onBack: () => void;
   onFollow: () => void;
   onUnfollow: () => void;
 }
 
-export default function PublicProfileView({ targetUid, isFollowing, onBack, onFollow, onUnfollow }: PublicProfileViewProps) {
+export default function PublicProfileView({ targetUid, myAlbums, me, isFollowing, onBack, onFollow, onUnfollow }: PublicProfileViewProps) {
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<Album | null>(null);
 
   useEffect(() => {
     void (async () => {
       setLoading(true);
       const [p, a] = await Promise.all([getUserProfile(targetUid), getAlbumsOnce(targetUid)]);
       setProfile(p);
-      setAlbums(a);
+      setAlbums(a.filter((x) => !x.wishlist));
       setLoading(false);
     })();
   }, [targetUid]);
@@ -35,6 +40,7 @@ export default function PublicProfileView({ targetUid, isFollowing, onBack, onFo
     );
   }
 
+  const { common, score } = compatibility(myAlbums.filter((a) => !a.wishlist), albums);
   const displayName = profile?.displayName || 'Utilisateur';
   const favAlbum = albums.find((a) => a.id === profile?.favoriteAlbumId);
   const genreCounts: Record<string, number> = {};
@@ -50,7 +56,7 @@ export default function PublicProfileView({ targetUid, isFollowing, onBack, onFo
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       {/* Header */}
-      <button onClick={onBack} className="flex items-center gap-2 text-sm text-base-content/40 hover:text-base-content transition-colors mb-6">
+      <button onClick={onBack} className="flex items-center gap-2 text-sm text-base-content/40 hover:text-base-content transition-colors mb-6 min-h-11">
         <FaArrowLeft className="text-xs" /> Retour
       </button>
 
@@ -89,6 +95,28 @@ export default function PublicProfileView({ targetUid, isFollowing, onBack, onFo
         )}
       </div>
 
+      {/* Compatibility */}
+      {myAlbums.some((a) => !a.wishlist) && albums.length > 0 && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-br from-spotify/20 to-secondary/20 border border-white/5">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-medium">Compatibilité musicale</p>
+            <p className="text-2xl font-bold text-spotify">{score}%</p>
+          </div>
+          <p className="text-xs text-base-content/50 mt-1">
+            {common.length === 0 ? 'Aucun album en commun… pour l’instant' : `${common.length} album${common.length > 1 ? 's' : ''} en commun`}
+          </p>
+          {common.length > 0 && (
+            <div className="flex gap-2 mt-3 overflow-x-auto genre-scroll">
+              {common.map((a) => (
+                <div key={a.id} className="w-14 h-14 rounded-lg overflow-hidden shrink-0" onClick={() => setSelected(a)}>
+                  <AlbumCover src={a.coverUrl} alt={a.name} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         <div className="bg-base-200 rounded-xl p-3 text-center border border-white/5">
@@ -112,7 +140,7 @@ export default function PublicProfileView({ targetUid, isFollowing, onBack, onFo
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
           {albums.map((album) => (
             <div key={album.id} className="rounded-xl overflow-hidden bg-base-200 border border-white/5">
-              <div className="aspect-square cursor-pointer" onClick={() => window.open(album.spotifyUrl, '_blank')}>
+              <div className="aspect-square cursor-pointer" onClick={() => setSelected(album)}>
                 <AlbumCover src={album.coverUrl} alt={album.name} />
               </div>
               <div className="p-2">
@@ -134,6 +162,8 @@ export default function PublicProfileView({ targetUid, isFollowing, onBack, onFo
           <p className="text-sm text-base-content/30">Aucun album ajouté</p>
         </div>
       )}
+
+      {selected && <FriendAlbumSheet album={selected} ownerUid={targetUid} me={me} onClose={() => setSelected(null)} />}
     </div>
   );
 }

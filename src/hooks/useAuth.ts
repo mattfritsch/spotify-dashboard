@@ -5,7 +5,8 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import type { User } from 'firebase/auth';
-import { auth, googleProvider } from '../lib/firebase';
+import { terminate, clearIndexedDbPersistence } from 'firebase/firestore';
+import { auth, db, googleProvider } from '../lib/firebase';
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -30,6 +31,10 @@ export function useAuth() {
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
+      // Don't leave this user's data in the offline cache (shared devices)
+      await terminate(db);
+      await clearIndexedDbPersistence(db);
+      location.reload();
     } catch (err) {
       console.error('Sign-out error:', err);
     }

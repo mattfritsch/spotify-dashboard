@@ -1,81 +1,86 @@
-import { FaStar, FaTrash, FaSpotify, FaHeart } from 'react-icons/fa';
+import { useRef } from 'react';
+import { FaStar, FaHeart, FaCheck } from 'react-icons/fa';
 import AlbumCover from './AlbumCover';
 import type { Album } from '../types';
 
 interface AlbumCardProps {
   album: Album;
   isFavorite?: boolean;
-  onDelete: (id: string) => void;
-  onRate: (id: string, rating: number | null) => void;
-  onToggleFavorite?: (id: string) => void;
+  selecting?: boolean;
+  selected?: boolean;
+  onOpen: (album: Album) => void;
+  onToggleSelect: (id: string) => void;
+  onLongPress: (id: string) => void;
 }
 
-export default function AlbumCard({ album, isFavorite, onDelete, onRate, onToggleFavorite }: AlbumCardProps) {
+const LONG_PRESS_MS = 450;
+
+export default function AlbumCard({ album, isFavorite, selecting, selected, onOpen, onToggleSelect, onLongPress }: AlbumCardProps) {
+  const timer = useRef<ReturnType<typeof setTimeout>>(null);
+  const origin = useRef({ x: 0, y: 0 });
+  const fired = useRef(false);
+
+  const cancel = () => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+  };
+
+  const handleClick = () => {
+    if (fired.current) {
+      fired.current = false;
+      return;
+    }
+    if (selecting) onToggleSelect(album.id);
+    else onOpen(album);
+  };
+
   return (
-    <div className="group relative rounded-xl overflow-hidden bg-base-200 border border-white/5 transition-all duration-200 active:scale-[0.98] hover:border-white/10">
-      {/* Cover */}
-      <div
-        className="relative cursor-pointer aspect-square"
-        onClick={() => window.open(album.spotifyUrl, '_blank')}
-      >
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={album.name}
+      aria-pressed={selecting ? !!selected : undefined}
+      className="group select-none [-webkit-touch-callout:none] cursor-pointer animate-[fadeIn_.3s_ease-out] active:scale-[0.97] transition-transform"
+      onClick={handleClick}
+      onKeyDown={(e) => e.key === 'Enter' && handleClick()}
+      onContextMenu={(e) => e.preventDefault()}
+      onPointerDown={(e) => {
+        fired.current = false;
+        origin.current = { x: e.clientX, y: e.clientY };
+        cancel();
+        timer.current = setTimeout(() => {
+          fired.current = true;
+          navigator.vibrate?.(15);
+          onLongPress(album.id);
+        }, LONG_PRESS_MS);
+      }}
+      onPointerMove={(e) => {
+        if (Math.hypot(e.clientX - origin.current.x, e.clientY - origin.current.y) > 10) cancel();
+      }}
+      onPointerUp={cancel}
+      onPointerCancel={cancel}
+      onPointerLeave={cancel}
+    >
+      <div className={`relative aspect-square rounded-2xl overflow-hidden shadow-lg shadow-black/40 ring-2 transition-all ${selected ? 'ring-spotify scale-95' : 'ring-transparent'}`}>
         <AlbumCover src={album.coverUrl} alt={album.name} />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all duration-200 flex items-center justify-center">
-          <FaSpotify className="text-spotify text-4xl opacity-0 group-hover:opacity-100 transition-all duration-200 drop-shadow-lg" />
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-2.5 space-y-1">
-        <h3 className="text-sm font-semibold leading-tight line-clamp-1">{album.name}</h3>
-        <p className="text-xs text-base-content/40 line-clamp-1">{album.artist}</p>
-
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-spotify/15 text-spotify font-medium">
-            {album.genre}
+        {album.rating ? (
+          <span className="absolute bottom-1.5 left-1.5 flex items-center gap-1 px-2 py-0.5 rounded-full bg-black/70 backdrop-blur text-[11px] font-medium text-amber-400">
+            <FaStar className="text-[9px]" />{album.rating}
           </span>
-          <div className="flex items-center gap-1">
-            {[1, 2, 3, 4, 5].map((star) => (
-              <button
-                key={star}
-                className="p-1.5 -m-1 touch-manipulation active:scale-125 transition-transform"
-                onClick={() => onRate(album.id, album.rating === star ? null : star)}
-              >
-                <FaStar
-                  className={`text-xs transition-colors ${
-                    album.rating && star <= album.rating
-                      ? 'text-amber-400'
-                      : 'text-white/10'
-                  }`}
-                />
-              </button>
-            ))}
-          </div>
-        </div>
+        ) : null}
+        {isFavorite && (
+          <span className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-black/70 backdrop-blur flex items-center justify-center text-error">
+            <FaHeart className="text-[10px]" />
+          </span>
+        )}
+        {selecting && (
+          <span className={`absolute top-1.5 left-1.5 w-6 h-6 rounded-full flex items-center justify-center border-2 ${selected ? 'bg-spotify border-spotify text-black' : 'bg-black/50 border-white/60'}`}>
+            {selected && <FaCheck className="text-[10px]" />}
+          </span>
+        )}
       </div>
-
-      {/* Favorite */}
-      {onToggleFavorite && (
-        <button
-          className={`absolute top-2 left-2 p-1.5 rounded-full transition-all ${
-            isFavorite
-              ? 'bg-error/80 text-white opacity-100'
-              : 'bg-black/60 text-white/60 opacity-0 group-hover:opacity-100 hover:bg-error/60 hover:text-white'
-          }`}
-          onClick={() => onToggleFavorite(album.id)}
-          title={isFavorite ? 'Retirer des favoris' : 'Album préféré'}
-        >
-          <FaHeart className="text-[10px]" />
-        </button>
-      )}
-
-      {/* Delete */}
-      <button
-        className="absolute top-2 right-2 p-1.5 rounded-full bg-black/60 text-white/60 opacity-0 group-hover:opacity-100 transition-all hover:bg-error hover:text-white"
-        onClick={() => onDelete(album.id)}
-      >
-        <FaTrash className="text-[10px]" />
-      </button>
+      <h3 className="mt-2 text-sm font-semibold leading-tight line-clamp-1">{album.name}</h3>
+      <p className="text-xs text-base-content/40 line-clamp-1">{album.artist}</p>
     </div>
   );
 }
-

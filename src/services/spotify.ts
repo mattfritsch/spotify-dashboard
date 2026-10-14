@@ -99,6 +99,7 @@ export async function fetchAlbumFromSpotify(albumId: string): Promise<SpotifyAlb
     coverUrl: data.images?.[0]?.url || '',
     spotifyUrl: data.external_urls?.spotify || `https://open.spotify.com/album/${data.id}`,
     genres,
+    releaseYear: parseInt(data.release_date) || undefined,
   };
 }
 
@@ -132,3 +133,30 @@ export async function searchAlbums(queryStr: string, limit = 8): Promise<Spotify
   }));
 }
 
+
+export interface TrackInfo {
+  name: string;
+  previewUrl: string | null;
+}
+
+/** Tracks (all pages) + release year of an album. */
+export async function fetchAlbumDetails(albumId: string): Promise<{ tracks: TrackInfo[]; releaseYear?: number }> {
+  const token = await getAccessToken();
+  const headers = { Authorization: `Bearer ${token}` };
+  const response = await fetch(`https://api.spotify.com/v1/albums/${albumId}`, { headers });
+  if (!response.ok) throw new Error("Erreur lors de la récupération de l'album");
+  const data = await response.json();
+
+  type Raw = { name: string; preview_url: string | null };
+  const toTrack = (t: Raw): TrackInfo => ({ name: t.name, previewUrl: t.preview_url });
+  const tracks: TrackInfo[] = (data.tracks?.items || []).map(toTrack);
+  let next: string | null = data.tracks?.next ?? null;
+  for (let page = 0; next && page < 10; page++) {
+    const r = await fetch(next, { headers });
+    if (!r.ok) break;
+    const d = await r.json();
+    tracks.push(...(d.items || []).map(toTrack));
+    next = d.next ?? null;
+  }
+  return { tracks, releaseYear: parseInt(data.release_date) || undefined };
+}

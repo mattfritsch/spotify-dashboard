@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { FaSearch, FaUser, FaArrowLeft, FaTimes, FaUserPlus } from 'react-icons/fa';
-import { getFollowing, searchUsersByName, followUser, unfollowUser } from '../services/firestore';
-import type { FollowEntry } from '../types';
+import AlbumCover from './AlbumCover';
+import { getFollowing, getRecentAlbums, searchUsersByName, followUser, unfollowUser } from '../services/firestore';
+import type { Album, FollowEntry } from '../types';
 
 interface FollowingPanelProps {
   uid: string;
@@ -15,12 +16,15 @@ export default function FollowingPanel({ uid, onBack, onViewProfile }: Following
   const [searchResults, setSearchResults] = useState<Array<{ uid: string; displayName: string; photoURL: string }>>([]);
   const [searching, setSearching] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [feed, setFeed] = useState<Array<Album & { by: FollowEntry }>>([]);
 
   useEffect(() => {
     void (async () => {
       const list = await getFollowing(uid);
       setFollowing(list);
       setLoading(false);
+      const recent = await Promise.all(list.map(async (f) => (await getRecentAlbums(f.uid, 4)).filter((a) => !a.wishlist).map((a) => ({ ...a, by: f }))));
+      setFeed(recent.flat().sort((a, b) => b.addedAt.localeCompare(a.addedAt)).slice(0, 12));
     })();
   }, [uid]);
 
@@ -62,8 +66,8 @@ export default function FollowingPanel({ uid, onBack, onViewProfile }: Following
 
   return (
     <div className="max-w-lg mx-auto px-4 py-6">
-      <button onClick={onBack} className="flex items-center gap-2 text-sm text-base-content/40 hover:text-base-content transition-colors mb-6">
-        <FaArrowLeft className="text-xs" /> Retour au dashboard
+      <button onClick={onBack} className="flex items-center gap-2 text-sm text-base-content/40 hover:text-base-content transition-colors mb-6 min-h-11">
+        <FaArrowLeft className="text-xs" /> Retour
       </button>
 
       <h2 className="text-lg font-bold mb-5">Mes suivis</h2>
@@ -127,7 +131,7 @@ export default function FollowingPanel({ uid, onBack, onViewProfile }: Following
               </div>
               <span className="text-sm font-medium flex-1 truncate">{entry.displayName}</span>
               <button
-                className="text-xs text-base-content/20 hover:text-error transition-colors opacity-0 group-hover:opacity-100 px-2 py-1"
+                className="text-xs text-base-content/20 hover:text-error transition-colors [@media(hover:hover)]:opacity-0 group-hover:opacity-100 px-3 min-h-11"
                 onClick={(e) => { e.stopPropagation(); handleUnfollow(entry.uid); }}
               >
                 Retirer
@@ -135,6 +139,23 @@ export default function FollowingPanel({ uid, onBack, onViewProfile }: Following
             </div>
           ))}
         </div>
+      )}
+
+      {feed.length > 0 && (
+        <>
+          <h2 className="text-lg font-bold mt-8 mb-3">Activité récente</h2>
+          <div className="space-y-1">
+            {feed.map((a) => (
+              <div key={`${a.by.uid}-${a.id}`} className="flex items-center gap-3 px-3 py-2 rounded-xl active:bg-base-200" onClick={() => onViewProfile(a.by.uid)}>
+                <AlbumCover src={a.coverUrl} alt={a.name} size="sm" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm truncate">{a.name}</p>
+                  <p className="text-xs text-base-content/40 truncate">{a.by.displayName} · {a.artist}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

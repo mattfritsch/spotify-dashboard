@@ -8,6 +8,20 @@ export interface Album {
   genre: string;
   rating: number | null;
   addedAt: string;
+  wishlist?: boolean;
+  note?: string;
+  releaseYear?: number;
+  lists?: string[];
+}
+
+export type AlbumFields = Partial<Pick<Album, 'wishlist' | 'note' | 'genre' | 'releaseYear' | 'lists'>>;
+
+export interface Comment {
+  id: string;
+  uid: string;
+  name: string;
+  text: string;
+  at: string;
 }
 
 export interface UserProfile {
@@ -30,6 +44,7 @@ export interface SpotifyAlbumData {
   coverUrl: string;
   spotifyUrl: string;
   genres: string[];
+  releaseYear?: number;
 }
 
 export interface SpotifySearchResult {
